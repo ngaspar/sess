@@ -59,8 +59,6 @@ PHP server example:
 <?php
 header('Content-Type: text/event-stream');
 header('Cache-Control: no-cache');
-
-$time = date('r');
 echo "data: {"type": "updateValueById", "id": "totalUsersLastMonth", "value": "3092287"}\n\n";
 flush();
 ?>
