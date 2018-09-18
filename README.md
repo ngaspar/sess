@@ -3,7 +3,7 @@
 Lightweight (< 100 LOC) vanilla Javascript/DOM reactive mechanism proof of concept - text contents and inner HTML can be updated from server-side event stream messages, subscribing by element id or class name. The goal is to provide a fast mechanism whenever trivial updates to the DOM are required in small-footprint applications (watchdog sytems, embedded webservers, etc.), where the overhead and complexity of current reactive/stateful RIA frameworks (with many layers of components and functionality) is unjustified or even poses development/runtime obstacles.
 
 Usage:
-Import script in whatever pages you require reactive elements. Server-side methods or controllers accept one connection per page; whenever a content or HTML functionality update is in order, the server dispatches the element(s) update event message as a Json object, with the following fields:
+Import script in whatever pages you require reactive elements and subscribe by invoking the _subscribeToEventStream_ method. Server-side methods or controllers should accept one connection per open page or session; whenever a content or HTML functionality update is in order, the server dispatches the element(s) update event message as a Json object, with the following fields:
 
 **data:**
 - _type_ - text - mandatory, indicates the type of update event (update value or HTML)
