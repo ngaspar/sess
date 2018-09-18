@@ -50,15 +50,15 @@ function poll(urlWithParams, pollInterval) {
 function handleMessage(data) {
   var append = data.append.toLowerCase() === "true";
   var isValue = !!data.value && !data.html;
-  var payload = isValue ? unescape(data.content) : unescape(data.html);
+  var content = isValue ? unescape(data.value) : unescape(data.html);
   if (data.type.endsWith("ById")) {
     var element = document.getElementById(data.id);
-    updateElement(element, payload, isValue, append);
+    updateElement(element, content, isValue, append);
   } else if (data.type.endsWith("ByClassName")) {
     var elements = document.getElementsByClassName(data.className);
     var i;
     for(i = 0; i < elements.length; i+=1) {
-      updateElement(elements[i], payload, isValue, append);
+      updateElement(elements[i], content, isValue, append);
     }
   }
 }
