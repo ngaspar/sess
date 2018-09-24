@@ -70,8 +70,9 @@ If EventSource is not supported (IE and Opera browsers: I'm looking at you), it 
 
 Default values:
  - _eventSourceURL_, server-side URL for update events - default is the **current URL**
+ - _pollingURLPath_, server-side URL used only when EventSource is not supported - default is **getElementUpdates**
+  (if polling, <server-side URL + **/getElementUpdates**> is the default URL it attempts to connect to)
  - _pollingInterval_, used only when EventSource is not supported - default is **1000 milliseconds**
- - if polling, <server-side URL + **/getElementUpdates**> is the default URL it attempts to connect to
 
 ---
 ## TODO
