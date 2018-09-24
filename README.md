@@ -3,7 +3,7 @@
 Lightweight (< 100 LOC) vanilla Javascript/DOM reactive mechanism proof of concept - text contents and inner HTML can be updated from server-side event stream messages, subscribing by element id or class name. The goal is to provide a fast mechanism whenever trivial updates to the DOM are required in small-footprint applications (watchdog sytems, embedded webservers, etc.) where the overhead/complexity of current reactive and stateful libraries would makes little sense or pose development/runtime obstacles.
 
 Usage:
-Import script in whatever pages you require reactive elements. Server-side methods or controllers accept one connection per page; whenever a content or HTML functionality update is in order, the server dispatches the element(s) update event message as a Json object, with the following fields:
+Import script in whatever pages you require reactive elements. Server-side methods or controllers accept one connection per page; whenever a content or HTML functionality update is in order, the server dispatches the element(s) update event message as a root Json _data_ object, with the following fields:
 
 **data:**
 - _type_ - text - mandatory, indicates the type of update event (update value or HTML)
@@ -52,7 +52,7 @@ Update elements HTML contents by class name:
 }}
 ```
 
-Server event message headers only need to declare the content type as text/event-stream, and no cache control.
+Server event message headers only need to declare the content type as text/event-stream, and no cache control. An optional connection _retry_ timeout in milliseconds can also be included in the message.
 
 PHP server example:
 ```php
@@ -61,6 +61,7 @@ header('Content-Type: text/event-stream');
 header('Cache-Control: no-cache');
 
 $time = date('r');
+echo "retry: 2000\n";
 echo "data: {"type": "updateValueById", "id": "totalUsersLastMonth", "value": "3092287"}\n\n";
 flush();
 ?>
