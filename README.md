@@ -69,12 +69,13 @@ flush();
 
 If EventSource is not supported (IE and Opera browsers: I'm looking at you), it reverts to a less-than-ideal but working polling mechanism. The server endpoint will have to account for these situations and expose a(n alternative) path/method that actively listens for the polling Ajax GET requests and replies with messages in the format described above whenever element updates are in order.
 
-Default values:
+A minimal set of properties is initialized as a _SESS_ object, which can be re-configured/replaced in every page:  
+**SESS{**
  - _eventSourceURL_, server-side URL for update events - default is the **current URL**
  - _pollingURLPath_, server-side URL used only when EventSource is not supported - default is **getElementUpdates**
   (if polling, <server-side URL + **/getElementUpdates**> is the default URL it attempts to connect to)
- - _pollingInterval_, used only when EventSource is not supported - default is **1000 milliseconds**
-
+ - _pollingInterval_, used only when EventSource is not supported - default is **1000 milliseconds**  
+**}**
 ---
 ## TODO
 - implement proper element adapter
