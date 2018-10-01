@@ -10,11 +10,11 @@ Import script in whatever pages you require reactive elements and subscribe by i
 - _className_ - text - required if updating elements by a class name
 - _attributeName_ - text - required if updating a specific attribute value/contents of the element(s)
 - _attributeValue_ - text - required if updating a specific attribute value/contents of the element(s)
-- _appendAttrValue_ - text - indicates whether to append the update to existing attribute values or replace them
+- _appendAttrValue_ - text - optional, indicates whether to append the update to existing attribute values or replace them
 - _html_ - text - (escaped HTML string) required if updating the HTML contents of the element(s)
-- _appendHtml_ - text - indicates whether to append the update to existing HTML contents or replace them
+- _appendHtml_ - text - optional, indicates whether to append the update to existing HTML contents or replace them
 - _text_ - text - (escaped HTML string) required if updating the text contents of the element(s)
-- _appendText_ - text - indicates whether to append the update to existing text values or replace them
+- _appendText_ - text - optional, indicates whether to append the update to existing text values or replace them  
 
 Some event message example variations:
 
@@ -22,41 +22,40 @@ Update single element's specific attribute by id and attribute name:
 ```json
 {data: {
     "id": "<element id>",
-    "attributeName": "<value to update/append with>",
+    "attributeName": "<name of the attribute to update>",
     "attributeValue": "<value to update/append with>",
-    "appendAttrValue": "<boolean>"
+    "appendAttrValue": "<text representing boolean>"
 }}
 ```
-Update elements text value/contents by class name:
+Update elements text contents by class name:
 ```json
 {data: {
     "className": "<class name>",
-    "text": "<value to update/append with>",
-    "appendText": "<boolean>"
+    "text": "<text to update/append with>",
+    "appendText": "<text representing boolean>"
 }}
 ```
-Update single element's HTML contents and a specific attribute, by id and attribute name:
+Update single element's HTML contents and replace a specific attribute (no attribute append indication), by id and attribute name:
 ```json
 {data: {
     "id": "<element id>",
     "html": "<escaped HTML string>",
-    "appendHtml": "<boolean>",
-    "attributeName": "<value to update/append with>",
-    "attributeValue": "<value to update/append with>"
+    "appendHtml": "<text representing boolean>",
+    "attributeName": "<name of the attribute to update>",
+    "attributeValue": "<value to replace with>"
 }}
 ```
 
 Server event message headers only need to declare the content type as text/event-stream and no cache control. An optional connection _retry_ timeout in milliseconds can also be included in the message.
 
-PHP server example:
+PHP server example - append a class name to an element's class attribute:
 ```php
 <?php
 header('Content-Type: text/event-stream');
 header('Cache-Control: no-cache');
 
-$time = date('r');
 echo "retry: 2000\n";
-echo "data: {"id": "emailInput", "attributeName": "class", "attributeValue": "inputMissingError"}\n\n";
+echo "data: {"id": "emailInput", "attributeName": "class", "attributeValue": " inputMissingError", "appendAttrValue" : "true"}\n\n";
 flush();
 ?>
 ```
