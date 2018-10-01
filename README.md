@@ -3,56 +3,50 @@
 Lightweight (< 100 LOC) vanilla Javascript/DOM reactive mechanism proof of concept - text contents and inner HTML can be updated from server-side event stream messages, subscribing by element id or class name. The goal is to provide a fast mechanism whenever trivial updates to the DOM are required in small-footprint applications (watchdog sytems, embedded webservers, etc.), where the overhead and complexity of current reactive/stateful RIA frameworks (with many layers of components and functionality) is unjustified or even poses development/runtime obstacles.
 
 Usage:
-Import script in whatever pages you require reactive elements and subscribe by invoking the _sessInit_ method. Server-side methods or controllers should accept one connection per open page or session; whenever a content or HTML functionality update is in order, the server dispatches the element(s) update event message as a root Json _data_ object, with the following fields:
+Import script in whatever pages you require reactive elements and subscribe by invoking the _sessInit_ method. Server-side methods or controllers should accept one connection per open page or session (initializing the EventSource URL with a unique id per page is a simple way to keep track, for example); whenever an attribute, content or HTML functionality update is in order, the server dispatches the element(s) update event message as a plain Json (root) _data_ object, with the following fields:
 
 **data:**
-- _type_ - text - mandatory, indicates the type of update event (update value or HTML)
-- _id_ - text - only required if updating an element by its id
-- _className_ - text - only required if updating elements by a class name
-- _value_ - text - only required if updating the text value/contents of elements
-- _html_ - text - (escaped HTML string) only required if updating the HTML contents of elements
-- _append_ - boolean or boolean text representation - mandatory, indicates whether to append the update to existing values/HTML or replace them
+- _id_ - text - required if updating an element by its id
+- _className_ - text - required if updating elements by a class name
+- _attributeName_ - text - required if updating a specific attribute value/contents of the element(s)
+- _attributeValue_ - text - required if updating a specific attribute value/contents of the element(s)
+- _appendAttrValue_ - text - indicates whether to append the update to existing attribute values or replace them
+- _html_ - text - (escaped HTML string) required if updating the HTML contents of the element(s)
+- _appendHtml_ - text - indicates whether to append the update to existing HTML contents or replace them
+- _text_ - text - (escaped HTML string) required if updating the text contents of the element(s)
+- _appendText_ - text - indicates whether to append the update to existing text values or replace them
 
-The 4 possible event message variations are as follows:
+Some event message example variations:
 
-Update single element's text value/contents by id:
+Update single element's specific attribute by id and attribute name:
 ```json
 {data: {
-    "type": "updateValueById",
     "id": "<element id>",
-    "value": "<value to update/append with>",
-    "append": "<boolean>"
+    "attributeName": "<value to update/append with>",
+    "attributeValue": "<value to update/append with>",
+    "appendAttrValue": "<boolean>"
 }}
 ```
 Update elements text value/contents by class name:
 ```json
 {data: {
-    "type": "updateValueByClassName",
     "className": "<class name>",
-    "value": "<value to update/append with>",
-    "append": "<boolean>"
+    "text": "<value to update/append with>",
+    "appendText": "<boolean>"
 }}
 ```
-Update single element's HTML contents by id:
+Update single element's HTML contents and a specific attribute, by id and attribute name:
 ```json
 {data: {
-    "type": "updateHTMLById",
     "id": "<element id>",
     "html": "<escaped HTML string>",
-    "append": "<boolean>"
-}}
-```
-Update elements HTML contents by class name:
-```json
-{data: {
-    "type": "updateHTMLByClassName",
-    "className": "<class name>",
-    "html": "<escaped HTML string>",
-    "append": "<boolean>"
+    "appendHtml": "<boolean>",
+    "attributeName": "<value to update/append with>",
+    "attributeValue": "<value to update/append with>"
 }}
 ```
 
-Server event message headers only need to declare the content type as text/event-stream, and no cache control. An optional connection _retry_ timeout in milliseconds can also be included in the message.
+Server event message headers only need to declare the content type as text/event-stream and no cache control. An optional connection _retry_ timeout in milliseconds can also be included in the message.
 
 PHP server example:
 ```php
@@ -62,7 +56,7 @@ header('Cache-Control: no-cache');
 
 $time = date('r');
 echo "retry: 2000\n";
-echo "data: {"type": "updateValueById", "id": "totalUsersLastMonth", "value": "3092287"}\n\n";
+echo "data: {"id": "emailInput", "attributeName": "class", "attributeValue": "inputMissingError"}\n\n";
 flush();
 ?>
 ```
@@ -71,8 +65,7 @@ If EventSource is not supported (IE and Opera browsers: I'm looking at you), it 
 
 Default values:
  - _eventSourceURL_, server-side URL for update events - default is the **current URL**
- - _pollingURLPath_, server-side URL used only when EventSource is not supported - default is **getElementUpdates**
-  (if polling, <server-side URL + **/getElementUpdates**> is the default URL it attempts to connect to)
+  (if polling, the same URL will be used for the server calls)
  - _pollingInterval_, used only when EventSource is not supported - default is **1000 milliseconds**
 
 ---

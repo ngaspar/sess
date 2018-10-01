@@ -1,6 +1,5 @@
 var SESS = {
   eventSourceURL : null,
-  pollingURLPath : null,
   pollingInterval : null
 };
 function sessInit() {
@@ -15,13 +14,8 @@ function sessInit() {
     if (SESS.pollingInterval !== undefined && SESS.eventSourceURL != null) {
       pI = SESS.pollingInterval;
     }
-    var uP = "getElementUpdates";
-    if (SESS.pollingURLPath !== undefined) {
-      uP = SESS.pollingURLPath.replace(/^\/+/g, "").replace(/\/$/, "");
-    }
-    var urlWithParams = esURL + "/" + uP;
     setTimeout(function() {
-      poll(urlWithParams, pI);
+      poll(esURL, pI);
     }, pI);
   }
 }
@@ -29,7 +23,9 @@ function initEs(esURL) {
   if (SESS.es === undefined || SESS.es === null || SESS.es.readyState === 2) {
     SESS.es = new EventSource(esURL);
     SESS.es.addEventListener("message", function(e) {
-      handleMessage(JSON.parse(e.data));
+      if(!!e.data) {
+        handleMessage(JSON.parse(e.data));
+      }
     }, false);
     SESS.es.addEventListener("error", function(e) {
       if (e.readyState === 2) { // Connection closed
@@ -44,8 +40,11 @@ function poll(urlWithParams, pollInterval) {
   var xhr = new XMLHttpRequest();
   xhr.open("GET", urlWithParams, true);
   xhr.onreadystatechange = function() {
-    if (xhr.readyState == 4 && xhr.status == 200) {
-      handleMessage(JSON.parse(xhr.responseText).data);
+    if (xhr.readyState == 4 && xhr.status == 200 && !!xhr.responseText) {
+      var responseObj = JSON.parse(xhr.responseText);
+      if(!!responseObj && !!responseObj.data) {
+        handleMessage(responseObj.data);
+      }
     }
   };
   xhr.send();
@@ -54,31 +53,39 @@ function poll(urlWithParams, pollInterval) {
   }, pollInterval);
 }
 function handleMessage(data) {
-  var append = data.append.toLowerCase() === "true";
-  var isValue = !!data.value && !data.html;
-  var content = isValue ? unescape(data.value) : unescape(data.html);
-  if (data.type.endsWith("ById")) {
-    var element = document.getElementById(data.id);
-    updateElement(element, content, isValue, append);
-  } else if (data.type.endsWith("ByClassName")) {
-    var elements = document.getElementsByClassName(data.className);
-    var i;
-    for (i = 0; i < elements.length; i += 1) {
-      updateElement(elements[i], content, isValue, append);
+  var id = data.elementId !== undefined ? data.elementId : null;
+  var className = !!data.className ? data.className : null;
+  var attributeName = data.attributeName !== undefined ? data.attributeName : null;
+  var attributeValue = data.attributeValue !== undefined ? unescape(data.attributeValue) : null;
+  var text = data.text !== undefined ? unescape(data.text) : null;
+  var html = data.html !== undefined ? unescape(data.html) : null;
+  var appendAttrValue = data.appendAttrValue !== undefined && data.appendAttrValue.toLowerCase() === "true";
+  var appendText = data.appendText !== undefined && data.appendText.toLowerCase() === "true";
+  var appendHtml = data.appendHtml !== undefined && data.appendHtml.toLowerCase() === "true";
+  if (id) {
+    var element = document.getElementById(id);
+    if(element) {
+      updateElement(element, attributeName, attributeValue, text, html, appendAttrValue, appendText, appendHtml);
+    }
+  } if (className) {
+    var elements = document.getElementsByClassName(className);
+    for (var i = 0; i < elements.length; i += 1) {
+      updateElement(elements[i], attributeName, attributeValue, text, html, appendAttrValue, appendText, appendHtml);
     }
   }
 }
-function updateElement(element, content, isValue, append) {
-  if (!isValue) {
-    element.innerHTML = append ? (element.innerHTML + content) : content;
+function updateElement(element, attributeName, attributeValue, text, html, appendAttrValue, appendText, appendHtml) {
+  if (html) {
+    element.innerHTML = appendHtml ? (element.innerHTML + html) : html;
     return;
   }
-  var nodeName = element.nodeName.toLowerCase();
-  if (nodeName == "input" && element.type !== "checkbox") {
-    element.value = append ? (element.value + content) : content;
-  } else if (nodeName === "a" || nodeName === "img") {
-    element.src = append ? (element.src + content) : content;
-  } else {
-    element.innerText = append ? (element.innerText + content) : content;
+  if(text){
+    element.innerHTML = appendText ? (element.innerText + text) : text;
+    return;
+  }
+  if(attributeName && attributeValue) {
+    var currentAttrValue = element.getAttribute(attributeName);
+    element.setAttribute(attributeName, appendAttrValue && !!currentAttrValue ? (currentAttrValue + attributeValue) : attributeValue);
+    return;
   }
 }
