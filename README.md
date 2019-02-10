@@ -75,5 +75,5 @@ SESS {
 ## TODO
 - implement proper element adapter
 - add minimal extensibility
-- first production-ready version
+- production-ready code
 - proper documentation and a few webapp examples
